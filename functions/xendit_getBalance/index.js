@@ -10,6 +10,6 @@ exports.handle = function(e, ctx, cb) {
         cb(null,response.data);
     })
         .catch(function (error) {
-        cb(null,error);
+        cb(error,null);
     });
 }
