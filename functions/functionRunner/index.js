@@ -32,9 +32,10 @@ exports.handle = function(e, ctx, cb) {
          if (err) {
             console.log("Error creating queue", err);
          } else {
+        console.log("new queue url: "+data.QueueUrl);
         var params = {
             MessageBody: jsonBody,
-            QueueUrl: "https://sqs.ap-southeast-1.amazonaws.com/455680218869/test_queue_1"
+            QueueUrl: data.QueueUrl
         };
         sqs.sendMessage(params, function(err, data){
             if (err) {
