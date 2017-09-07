@@ -13,7 +13,12 @@ exports.handle = function(e, ctx, cb) {
             cb(err);
         } else {
             //SQS Recieve Message nya.
-            cb(null, data.Messages);
+            // cb(null, data.Messages[0].Body);
+
+            let data = JSON.parse(data.Messages[0].Body);
+
+            cb(null, data.secret_key);
+
             // ini untuk Axios nya
             // axios.get('https://api.xendit.co/balance',{ // API check Balance
             // auth: {
