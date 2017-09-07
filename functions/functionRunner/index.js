@@ -32,20 +32,20 @@ exports.handle = function(e, ctx, cb) {
          if (err) {
             console.log("Error creating queue", err);
          } else {
-        console.log("new queue url: "+data.QueueUrl);
         var params = {
             MessageBody: jsonBody,
             QueueUrl: data.QueueUrl
         };
-        sqs.sendMessage(params, function(err, data){
+        sqs.sendMessage(params, function(err, data2){
             if (err) {
                 console.log("Error", err);
             } else {
                 console.log("Success sending to SQS", data.MessageId);
             
 
+            console.log("new queue url: "+data.QueueUrl);
             sns.publish({
-                Message: uuid,
+                Message: data.QueueUrl,
                 TopicArn: 'arn:aws:sns:ap-southeast-1:455680218869:taskNotification'
             }, function(err,data){
                 if (err) {
@@ -54,9 +54,7 @@ exports.handle = function(e, ctx, cb) {
                     return;
                 }
                 console.log('sent push');
-                console.log('data');
-                console.log(null, 'Function finished!');
-                ctx.succeed('Function finished!');
+                cb(null, 'Function finished!');
             });
             }
         });
