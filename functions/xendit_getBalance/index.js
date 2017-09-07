@@ -13,24 +13,30 @@ exports.handle = function(e, ctx, cb) {
             cb(err);
         } else {
             //SQS Recieve Message nya.
-            // cb(null, data.Messages[0].Body);
-
-            let data = JSON.parse(data.Messages[0].Body);
-
-            cb(null, data.secret_key);
-
+            let data_key = JSON.parse(data.Messages[0].Body);
+            let Recieve_Handel = data.Messages[0].ReceiptHandle
             // ini untuk Axios nya
-            // axios.get('https://api.xendit.co/balance',{ // API check Balance
-            // auth: {
-            //     username: secret_key.MessageAttributes.secret_key
-            //   }
-            // })
-            //     .then(function (response) {
-            //     cb(null,response.data);
-            // })
-            //     .catch(function (error) {
-            //     cb(null,error);
-            // });
+            axios.get('https://api.xendit.co/balance',{ // API check Balance
+            auth: {
+                username: data_key.secret_key
+              }
+            })
+                .then(function (response) {
+                const params_delete = {
+                    QueueUrl: 'https://sqs.ap-southeast-1.amazonaws.com/455680218869/test_queue_1',
+                    ReceiptHandle: Recieve_Handel
+                }
+                sqs.deleteMessage(params_delete, function(err, d) {
+                    if (err) {
+                        cb(err, err.stack);
+                     } else {
+                        cb(null,response.data);
+                     } 
+                })
+            })
+                .catch(function (error) {
+                cb(error,null);
+            });
         }
     });
 
