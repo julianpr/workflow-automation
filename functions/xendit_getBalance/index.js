@@ -3,8 +3,9 @@ const AWS = require('aws-sdk');
 const sqs = new AWS.SQS();
 
 exports.handle = function(e, ctx, cb) {
+    let url = e.Records[0].Sns.Message
     const params = {
-        QueueUrl: 'https://sqs.ap-southeast-1.amazonaws.com/455680218869/test_queue_1',
+        QueueUrl: url,
         MaxNumberOfMessages: 1
     };
     sqs.receiveMessage(params, function(err, data) {
@@ -23,13 +24,14 @@ exports.handle = function(e, ctx, cb) {
             })
                 .then(function (response) {
                 const params_delete = {
-                    QueueUrl: 'https://sqs.ap-southeast-1.amazonaws.com/455680218869/test_queue_1',
+                    QueueUrl: url,
                     ReceiptHandle: Recieve_Handel
                 }
                 sqs.deleteMessage(params_delete, function(err, d) {
                     if (err) {
                         cb(err, err.stack);
                      } else {
+                         console.log(response.data);
                         cb(null,response.data);
                      } 
                 })
