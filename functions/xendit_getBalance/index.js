@@ -10,15 +10,14 @@ exports.handle = function(e, ctx, cb) {
         }
     })
     .then((response) => {
-        // cb(null,response.data)
         sns.publish({
             Message: JSON.stringify(response.data),
-            TopicArn: 'arn:aws:sns:ap-southeast-1:455680218869:taskNotification'
-        }, function(err,data){
+            TopicArn: 'arn:aws:sns:ap-southeast-1:455680218869:taskResponse'
+        }, function(err,res){
             if (err) {
-                cb(err,null)
+                cb(err,null);
             } else {
-                console.log(data);
+                console.log("Berhasil kirim dan akan di kirimkan ke Function Runner", res);
             }
         });
     })
