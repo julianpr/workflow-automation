@@ -1,43 +1,29 @@
 const axios = require("axios");
 const AWS = require('aws-sdk');
-const sqs = new AWS.SQS();
+const sns = new AWS.SNS();
 
 exports.handle = function(e, ctx, cb) {
-    const params = {
-        QueueUrl: 'https://sqs.ap-southeast-1.amazonaws.com/455680218869/test_queue_1',
-        MaxNumberOfMessages: 1
-    };
-    sqs.receiveMessage(params, function(err, data) {
-        if (err) {
-            console.error(err, err.stack);
-            cb(err);
-        } else {
-            //SQS Recieve Message nya.
-            let data_key = JSON.parse(data.Messages[0].Body);
-            let Recieve_Handel = data.Messages[0].ReceiptHandle
-            // ini untuk Axios nya
-            axios.get('https://api.xendit.co/balance',{ // API check Balance
-            auth: {
-                username: data_key.secret_key
-              }
-            })
-                .then(function (response) {
-                const params_delete = {
-                    QueueUrl: 'https://sqs.ap-southeast-1.amazonaws.com/455680218869/test_queue_1',
-                    ReceiptHandle: Recieve_Handel
-                }
-                sqs.deleteMessage(params_delete, function(err, d) {
-                    if (err) {
-                        cb(err, err.stack);
-                     } else {
-                        cb(null,response.data);
-                     } 
-                })
-            })
-                .catch(function (error) {
-                cb(error,null);
-            });
+    let msg = e.Records[0].Sns.Message.xnd_development_key
+    axios.get('https://api.xendit.co/balance', {
+        auth: {
+            username: msg
         }
-    });
-
+    })
+    .then((response) => {
+        // cb(null,response.data)
+        sns.publish({
+            Message: JSON.stringify(response.data),
+            TopicArn: 'arn:aws:sns:ap-southeast-1:455680218869:taskNotification'
+        }, function(err,data){
+            if (err) {
+                cb(err,null)
+            } else {
+                console.log(data);
+            }
+        });
+    })
+    .catch(error => {
+        cb(error, null)
+    })
 }
+    
