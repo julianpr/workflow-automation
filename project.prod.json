@@ -5,6 +5,6 @@
   "timeout": 5,
   "role": "arn:aws:iam::455680218869:role/SKAX_lambda_function",
   "environment": {
-    "ENVIRONMENT": "dev"
+    "ENVIRONMENT": "prod"
   }
 }
