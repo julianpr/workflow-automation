@@ -11,6 +11,7 @@ exports.handle = function(e, ctx, cb) {
     })
     .then((response) => {
         sns.publish({
+            Subject: "Respone Not Error",
             Message: JSON.stringify(response.data),
             TopicArn: 'arn:aws:sns:ap-southeast-1:455680218869:taskResponse'
         }, function(err,res){
@@ -22,7 +23,16 @@ exports.handle = function(e, ctx, cb) {
         });
     })
     .catch(error => {
-        cb(error, null)
+        sns.publish({
+            Subject: "Respone Error",
+            Message: JSON.stringify(error.response.data),
+            TopicArn: 'arn:aws:sns:ap-southeast-1:455680218869:taskResponse'
+        }, function(err,res){
+            if (err) {
+                cb(err,null);
+            } else {
+                console.log("Berhasil kirim dan akan di kirimkan ke Function Runner", res);
+            }
+        });
     })
 }
-    
