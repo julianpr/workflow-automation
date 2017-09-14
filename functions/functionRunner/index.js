@@ -1,7 +1,5 @@
-
-var AWS = require('aws-sdk');
-
-console.log('starting function')
+const AWS = require('aws-sdk');
+const dynamodb = new AWS.DynamoDB();
 
 function generateUUID () { 
     var d = new Date().getTime();
@@ -16,49 +14,58 @@ function generateUUID () {
 }
 
 exports.handle = function(e, ctx, cb) {
-      var sns = new AWS.SNS()
-      var sqs = new AWS.SQS()
+      const sns = new AWS.SNS()
+      let body = {"secret_key": "xnd_development_P4yEfOV1g7Ktl8I4fLAbTjOTZNalp9d5kXe0+Rxj+WPQ+banDAN1gw=="};
 
-      var body = {"secret_key": "xnd_development_P4yEfOV1g7Ktl8I4fLAbTjOTZNalp9d5kXe0+Rxj+WPQ+banDAN1gw=="};
-
-      var jsonBody = JSON.stringify(body);
+      let jsonBody = JSON.stringify(body);
       
-      var uuid = generateUUID();
-      var newParams = {
-        QueueName: uuid
+      let uuid = generateUUID();
+      let newParams = {
+          QueueName: uuid
       };
 
-      sqs.createQueue(newParams, function(err, data){
-         if (err) {
-            console.log("Error creating queue", err);
-         } else {
-        var params = {
-            MessageBody: jsonBody,
-            QueueUrl: data.QueueUrl
-        };
-        sqs.sendMessage(params, function(err, data2){
-            if (err) {
-                console.log("Error", err);
-            } else {
-                console.log("Success sending to SQS", data.MessageId);
-            
-
-            console.log("new queue url: "+data.QueueUrl);
-            sns.publish({
-                Message: data.QueueUrl,
-                TopicArn: 'arn:aws:sns:ap-southeast-1:455680218869:taskNotification'
-            }, function(err,data){
-                if (err) {
-                    console.log(err.stack);
-                    cb("EEERRRROOR");
-                    return;
-                }
-                console.log('sent push');
-                cb(null, 'Function finished!');
-            });
-            }
-        });
-        }
-      });
+      //Pertama Get data nya
+      let params = {
+        ExpressionAttributeValues: {
+            ":id": {
+                S: "111222"
+             },
+             ":pi": {
+                S: "0"
+             }
+           }, 
+        FilterExpression: "streamId = :id AND parentId <> :pi",
+        TableName: "StreamTasks"
+       };
+       dynamodb.scan(params, (err,data) => { // ini akan di ganti dari scan ke query
+           if(err){
+               cb(err,null)
+           } else {
+                // if(e.Records[0].Sns.Subject === "Success"){
+                //     console.log(e.Records[0].Sns.Message)
+                // } else {
+                //     // kalau dia error tolong di break;
+                //     console.log(e.Records[0].Sns.Message)
+                // }
+                data.Items.forEach((data,i) => {
+                    if(data.parentId.S === e.Records[0].Sns.Message.new_stream_id){
+                        //case kalau dia ketemu yang sama
+                        let newObj = Object.assign(body,data)
+                            sns.publish({
+                                Message: JSON.stringify(newObj),
+                                TopicArn: `arn:aws:sns:ap-southeast-1:455680218869:task_${data.api.S}`
+                            }, function(err,res){
+                                if (err) {
+                                    cb(err,null);
+                                } else {
+                                    console.log("Berhasil kirim dan akan di kirimkan ke Xendit Get Balance", res);
+                                }
+                            });
+                    } else {
+                        console.log("ini sudah selesai");
+                    }
+                })
+           }
+       })
 };
 
