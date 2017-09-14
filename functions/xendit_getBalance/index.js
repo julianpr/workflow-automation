@@ -3,16 +3,17 @@ const AWS = require('aws-sdk');
 const sns = new AWS.SNS();
 
 exports.handle = function(e, ctx, cb) {
-    let msg = e.Records[0].Sns.Message.xnd_development_key
+    let sk = JSON.parse(e.Records[0].Sns.Message)
     axios.get('https://api.xendit.co/balance', {
         auth: {
-            username: msg
+            username: sk.secret_key
         }
     })
     .then((response) => {
+        let send_data = Object.assign({"new_stream_id":sk.streamTaskId},{"data":response.data})
         sns.publish({
-            Subject: "Respone Not Error",
-            Message: JSON.stringify(response.data),
+            Subject: "Success",
+            Message: JSON.stringify(send_data),
             TopicArn: 'arn:aws:sns:ap-southeast-1:455680218869:taskResponse'
         }, function(err,res){
             if (err) {
@@ -24,7 +25,7 @@ exports.handle = function(e, ctx, cb) {
     })
     .catch(error => {
         sns.publish({
-            Subject: "Respone Error",
+            Subject: "Error",
             Message: JSON.stringify(error.response.data),
             TopicArn: 'arn:aws:sns:ap-southeast-1:455680218869:taskResponse'
         }, function(err,res){
@@ -35,4 +36,5 @@ exports.handle = function(e, ctx, cb) {
             }
         });
     })
+    console.log(sk.streamTaskId.S)
 }
