@@ -14,7 +14,8 @@ function generateUUID () {
         return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
     });
 }
-
+// Create task function
+// Input: workflowId , parentId, api, apiFunction
 exports.handle = function(e, ctx, cb) {
       var sns = new AWS.SNS()
       var sqs = new AWS.SQS()
@@ -22,40 +23,53 @@ exports.handle = function(e, ctx, cb) {
       if (!Date.now) {
               Date.now = function() { return new Date().getTime(); }
       }
-      var checkDate = Date.now();
-      console.log("DATE OBJECT: " + typeof(checkDate));
+      console.log("EVENT DEBUG: "+e);
+
+      var workflowId = (e.workflowId === undefined ? '' : e.workflowId);
+      var stepNumber = (e.stepNumber === undefined ? '' : e.stepNumber);
+      var api = (e.api === undefined ? '' : e.api);
+      var apiFunction = (e.apiFunction === undefined ? '' : e.apiFunction);
+      var dataIn = (e.dataIn === undefined ? ' ' : e.dataIn);
+      var dataOut = (e.dataOut === undefined ? ' ' :e.dataOut);
+
 
       var dynamodb = new AWS.DynamoDB();
       var newItem = { 
             Item: {
-                    "workflowId": {
+                    "taskId": {
                         S: uuid
                     },
-                    "name": {
-                        S: "testWorkflow"
+                    "workflowId": {
+                        S: workflowId 
                     },
-                    "dateCreated":{
-                        N: Date.now().toString()
+                    "stepNumber": {
+                        N: stepNumber
                     },
-                    "deleteFlag":{
-                        BOOL: false
+                    "status":{
+                        S: "new"
                     },
-                    "draftFlag": {
-                        BOOL: false
+                    "api":{
+                        S: api
                     },
-                    "isActive": {
-                        BOOL: false
+                    "function": {
+                        S: apiFunction
                     },
+                    "dataIn": {
+                        S: dataIn
+                    },
+                    "dataOut": {
+                        S: dataOut
+                    }
                 },
             ReturnConsumedCapacity: "TOTAL",
-            TableName: "Workflows"
+            TableName: "Tasks"
           };
     dynamodb.putItem(newItem, function(err, data){
             if (err) cb(err,err.stack); //error occurred
             else {
                 console.log(data);
                 console.log("DB SUCCESS");
-                cb(null,"Successfully created table in dynamodb!");
+                cb(null,"Successfully created a task in dynamodb!");
             }
         });
 };
