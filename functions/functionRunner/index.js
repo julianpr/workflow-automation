@@ -51,12 +51,9 @@ exports.handle = function(e, ctx, cb) {
                     if(data.parentId.S === e.Records[0].Sns.Message.new_stream_id){
                         //case kalau dia ketemu yang sama
                         let newObj = Object.assign(body,data)
-                        switch (data.api.S)
-                        {
-                            case "xendit" || "Xendit" :
                             sns.publish({
                                 Message: JSON.stringify(newObj),
-                                TopicArn: 'arn:aws:sns:ap-southeast-1:455680218869:taskNotification'
+                                TopicArn: `arn:aws:sns:ap-southeast-1:455680218869:task_${data.api.S}`
                             }, function(err,res){
                                 if (err) {
                                     cb(err,null);
@@ -64,11 +61,6 @@ exports.handle = function(e, ctx, cb) {
                                     console.log("Berhasil kirim dan akan di kirimkan ke Xendit Get Balance", res);
                                 }
                             });
-                            break;
-                            
-                            default:
-                            break;
-                        }
                     } else {
                         console.log("ini sudah selesai");
                     }
