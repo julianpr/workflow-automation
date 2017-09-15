@@ -14,6 +14,7 @@ function generateUUID () {
         return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
     });
 }
+
 // Start stream function
 exports.handle = function(e, ctx, cb) {
       var sns = new AWS.SNS()
@@ -72,9 +73,12 @@ exports.handle = function(e, ctx, cb) {
 
                             for(var i = 0; i < data.Count; i++) 
                             {   
+                                console.log("i = "+ i);
+
                                 var newUuid = generateUUID();
                                 streamTaskIds.push(newUuid);
                                 var object = data.Items[i];
+                                console.log("DATA = "+JSON.stringify(object));
                                 var parentId = "0";
                                 if (i !== 0) 
                                 {
@@ -109,32 +113,36 @@ exports.handle = function(e, ctx, cb) {
                                         }
                                     }
                                 }
-                                
-                                // insert streamTask item into dynamodb
-                                dynamodb.putItem(newStreamTask, function(err,data){
-                                    if (err) {
-                                        cb(err);
-                                    } else {
-                                        console.log(null,"successfully put streamtask item")
-                                    }
-                                });
-
                                 // publish sns if first item to start off the tasks
-                                if (i === 0)
+                                if (parentId === '0')
                                 {
-                                    sns.publish({
-                                        Message: JSON.stringify(data.Items[i]),
-                                        TopicArn: 'arn:aws:sns:ap-southeast-1:455680218869:task_'+data.Items[i].api.S
-                                    }, function(err,data){
-                                        if (err) {
-                                            console.log(err.stack);
-                                            cb("ERROR PUBLISHING FIRST SNS");
-                                        } else {
-                                        console.log('sent sns push for first task');
-                                        cb(null, 'sns pushed for first task');
-                                        }
-                                    });
+                                    console.log("parentId = "+parentId);
+                                    console.log("newStreamTask =" + JSON.stringify(newStreamTask));
+                                      sns.publish({
+                                          Message: JSON.stringify(newStreamTask.Item),
+                                          TopicArn: 'arn:aws:sns:ap-southeast-1:455680218869:task_'+newStreamTask.Item.api.S
+                                      }, function(err,data){
+                                          if (err) {
+                                              console.log(err.stack);
+                                              cb("ERROR PUBLISHING FIRST SNS");
+                                          } else {
+                                          console.log('sent sns push for first task');
+                                          // cb(null, 'sns pushed for first task');
+                                          }
+                                      });
+                                      
+                                  
                                 }
+                            
+                              // insert streamTask item into dynamodb
+                              dynamodb.putItem(newStreamTask, function(err,data){
+                                  if (err) {
+                                      cb(err);
+                                  } else {
+                                      console.log(null,"successfully put streamtask item")
+                                  }
+                              });  
+                                
                             }
                         }
                     });

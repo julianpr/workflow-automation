@@ -4,16 +4,20 @@ const sns = new AWS.SNS();
 
 exports.handle = function(e, ctx, cb) {
     let sk = JSON.parse(e.Records[0].Sns.Message)
+    console.log("TEST DATA IN " + JSON.stringify(sk));
+    let jsonSK = JSON.parse(sk.dataIn.S);
+
 
     switch(sk.function.S) {
         case "getBalance" :
         axios.get('https://api.xendit.co/balance', {
             auth: {
-                username: sk.secret_key
+                username: jsonSK.secret_key
             }
         })
         .then((response) => {
-            let send_data = Object.assign({"new_stream_id":sk.streamTaskId},{"data":response.data})
+            let send_data = Object.assign({"new_stream_task_id":sk.streamTaskId.S},{"data":response.data},{"new_stream_id":sk.streamId.S})
+            console.log("SEND_DATA = "+JSON.stringify(send_data));
             sns.publish({
                 Subject: "Success",
                 Message: JSON.stringify(send_data),
@@ -35,7 +39,7 @@ exports.handle = function(e, ctx, cb) {
                 if (err) {
                     cb(err,null);
                 } else {
-                    console.log("Berhasil kirim dan akan di kirimkan ke Function Runner", res);
+                    console.log("Berhasil TAPI ERROR, dan akan di kirimkan ke Function Runner", res);
                 }
             });
         })
