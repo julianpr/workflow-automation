@@ -6,8 +6,6 @@ exports.handle = function(e, ctx, cb) {
     let sk = JSON.parse(e.Records[0].Sns.Message)
     console.log("TEST DATA IN " + JSON.stringify(sk));
     let jsonSK = JSON.parse(sk.dataIn.S);
-
-
     switch(sk.function.S) {
         case "getBalance" :
         axios.get('https://api.xendit.co/balance', {
