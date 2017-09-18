@@ -1,5 +1,5 @@
-const axios = require("axios");
 const AWS = require('aws-sdk');
+const axios = require('axios');
 const sns = new AWS.SNS();
 
 exports.handle = function(e, ctx, cb) {
