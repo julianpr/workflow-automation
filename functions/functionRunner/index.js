@@ -118,7 +118,7 @@ exports.handle = function(e, ctx, cb) {
                                 if (err) {
                                     cb(err,null);
                                 } else {
-                                    console.log("Berhasil kirim dan akan di kirimkan ke Xendit Get Balance", res);
+                                    console.log(`Berhasil kirim dan akan di kirimkan ke ${data.api.S} ${data.function.S}`, res);
                                 }
                             });
                     } else {
