@@ -8,7 +8,7 @@ exports.handle = function(e, ctx, cb) {
     let jsonSK = JSON.parse(sk.dataIn.S);
 
     switch(sk.function.S) {
-       case "sms" :
+       case "Sms" :
        axios.post("https://rest.nexmo.com/sms/json", {
            api_key: jsonSK.api_key,
            api_secret: jsonSK.api_secret,
