@@ -1,5 +1,5 @@
-const axios = require("axios");
 const AWS = require('aws-sdk');
+const axios = require('axios');
 const sns = new AWS.SNS();
 
 exports.handle = function(e, ctx, cb) {
@@ -7,15 +7,16 @@ exports.handle = function(e, ctx, cb) {
     console.log("TEST DATA IN " + JSON.stringify(sk));
     let jsonSK = JSON.parse(sk.dataIn.S);
 
-
     switch(sk.function.S) {
-        case "getBalance" :
-        axios.get('https://api.xendit.co/balance', {
-            auth: {
-                username: jsonSK.secret_key
-            }
+       case "Sms" :
+       axios.post("https://rest.nexmo.com/sms/json", {
+           api_key: jsonSK.api_key,
+           api_secret: jsonSK.api_secret,
+           to: jsonSK.to,
+           from: jsonSK.from,
+           text: jsonSK.text
         })
-        .then((response) => {
+        .then(response => {
             let send_data = Object.assign({"new_stream_task_id":sk.streamTaskId.S},{"data":response.data},{"new_stream_id":sk.streamId.S})
             console.log("SEND_DATA = "+JSON.stringify(send_data));
             sns.publish({
@@ -30,7 +31,7 @@ exports.handle = function(e, ctx, cb) {
                 }
             });
         })
-        .catch(error => {
+        .catch(err => {
             sns.publish({
                 Subject: "Error",
                 Message: JSON.stringify(error.response.data),
@@ -43,10 +44,10 @@ exports.handle = function(e, ctx, cb) {
                 }
             });
         })
-        break;
-        // tambah module di sini aja
-        default:
-            cb(null, `Module nya xendit ${sk.function.S} not found`);
-        break;
+       break;
+       
+       default:
+       cb(null, `Module nya Nexmo ${sk.function.S} not found`);
+       break;
     }
 }
