@@ -1,6 +1,6 @@
 {
-    "name": "cloud_watch",
-    "description": "Nexmo function",
+    "name": "print_cloud_watch",
+    "description": "print_cloud_watch function",
     "runtime": "nodejs6.10",
     "memory": 128,
     "timeout": 10,
