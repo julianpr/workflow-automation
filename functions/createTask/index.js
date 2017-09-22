@@ -1,4 +1,3 @@
-
 var AWS = require('aws-sdk');
 
 console.log('starting function')
@@ -15,7 +14,7 @@ function generateUUID () {
     });
 }
 // Create task function
-// Input: workflowId , parentId, api, apiFunction
+// Input: workflowId , parentId, api, apiFunction, type (optional)
 exports.handle = function(e, ctx, cb) {
       var sns = new AWS.SNS()
       var sqs = new AWS.SQS()
@@ -31,6 +30,7 @@ exports.handle = function(e, ctx, cb) {
       var apiFunction = (e.apiFunction === undefined ? '' : e.apiFunction);
       var dataIn = (e.dataIn === undefined ? ' ' : e.dataIn);
       var dataOut = (e.dataOut === undefined ? ' ' :e.dataOut);
+      var type = (e.type === undefined ? 'task' :e.type);
 
 
       var dynamodb = new AWS.DynamoDB();
@@ -40,7 +40,7 @@ exports.handle = function(e, ctx, cb) {
                         S: uuid
                     },
                     "workflowId": {
-                        S: workflowId 
+                        S: workflowId
                     },
                     "stepNumber": {
                         N: stepNumber
@@ -59,6 +59,9 @@ exports.handle = function(e, ctx, cb) {
                     },
                     "dataOut": {
                         S: dataOut
+                    },
+                    "type": {
+                      S: type
                     }
                 },
             ReturnConsumedCapacity: "TOTAL",
