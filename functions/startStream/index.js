@@ -26,7 +26,9 @@ exports.handle = function(e, ctx, cb) {
 
       var streamId = uuid; //temporary id for testing
       var dynamodb = new AWS.DynamoDB();
-      var workflowId = (e.workflowId === undefined ? '' : e.workflowId);
+      let rawstring = e.resources[0]
+      var findString = rawstring.substr(rawstring.indexOf("CW_") + 3);
+      var workflowId = (findString === undefined ? '' : findString);
 
       var newItem = {
             Item: {
