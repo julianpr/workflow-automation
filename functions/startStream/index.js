@@ -18,7 +18,6 @@ function generateUUID () {
 // Start stream function
 exports.handle = function(e, ctx, cb) {
       var sns = new AWS.SNS()
-      var sqs = new AWS.SQS()
       var uuid = generateUUID();
       if (!Date.now) {
               Date.now = function() { return new Date().getTime(); }
