@@ -1,6 +1,3 @@
-var Hashids = require('hashids');
-
-
 function xml2json(xml, tab) {
    var X = {
       toObj: function(xml) {
