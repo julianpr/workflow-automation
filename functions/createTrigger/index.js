@@ -35,8 +35,8 @@ exports.handle = function(e, ctx, cb) {
             "startDate": {
                 S: e.startDate
             },
-            "streamId": {
-                S: e.streamId
+            "workflowId": {
+                S: e.workflowId
             },
             "type":{
                 S: e.type

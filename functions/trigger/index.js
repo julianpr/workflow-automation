@@ -10,10 +10,10 @@ exports.handle = function(e, ctx, cb) {
       let queryDynamodb = {
         ExpressionAttributeValues: {
           ":id": {
-              S: e.streamId
+              S: e.workflowId
            }
          }, 
-        FilterExpression: "streamId = :id",
+        FilterExpression: "workflowId = :id",
         TableName: "Triggers"
         }
       dynamodb.scan(queryDynamodb, (err,data) => {
@@ -24,21 +24,21 @@ exports.handle = function(e, ctx, cb) {
           switch(dataTriggers.type.S){
             case "scheduler":
               let params_putRule = {
-                  Name: `CW_${dataTriggers.streamId.S}`, //ini untuk name Workflow ID nya
+                  Name: `CW_${dataTriggers.workflowId.S}`, //ini untuk name Workflow ID nya
                   RoleArn: 'arn:aws:iam::455680218869:role/SKAX_lambda_function',
                   ScheduleExpression: `cron(${dataTriggers.cronDate.S})`, // ini untuk ScheduleExpressionya
                   State: "ENABLED" // ini untuk ENABLED atau DISABLED nya
                 };
-                
                 cwevents.putRule(params_putRule, function(err, data) {
                   if (err) {
                     cb(err,null);
                   } else {
+                    // ini put target 
                     let params_putTarget = {
-                      Rule: `CW_${dataTriggers.streamId.S}`,
+                      Rule: `CW_${dataTriggers.workflowId.S}`,
                       Targets: [
                         {
-                          Id : `CW_${dataTriggers.streamId.S}`,
+                          Id : `CW_${dataTriggers.workflowId.S}`,
                           Arn: 'arn:aws:lambda:ap-southeast-1:455680218869:function:SKAX_startStream'
                         }
                       ]
@@ -47,21 +47,40 @@ exports.handle = function(e, ctx, cb) {
                       if (err) {
                         cb(err,null);
                       } else {
-                        // cb(null,data);
-                        let params_addPermission = {
-                          Action: "lambda:InvokeFunction", 
-                          FunctionName: "SKAX_startStream", 
-                          Principal: "events.amazonaws.com",
-                          SourceArn: `arn:aws:events:ap-southeast-1:455680218869:rule/CW_${dataTriggers.streamId.S}`, 
-                          StatementId: `lambda_${dataTriggers.streamId.S}`
-                        }
-                        lambda.addPermission(params_addPermission, (err, data) => {
-                          if(err) {
-                            cb(err,null);
+                        let params_putEvent = {
+                          Entries: [
+                            {
+                              Detail: `{ \"workflowId\": \"${dataTriggers.workflowId.S}\"}`,
+                              DetailType: dataTriggers.workflowId.S,
+                              Resources: [
+                                `arn:aws:events:ap-southeast-1:455680218869:rule/CW_AntoniAngga`
+                              ],
+                              Source: "asdasdasd",
+                              Time: new Date || 'Wed Dec 31 1969 16:00:00 GMT-0800 (PST)' || 123456789
+                            },
+                          ]
+                        };
+                        cwevents.putEvents(params_putEvent, function(err, data) {
+                          if (err){ 
+                            console.log(err, err.stack);
                           } else {
-                            cb(null,data);
+                            console.log(data);
+                            let params_addPermission = {
+                              Action: "lambda:InvokeFunction", 
+                              FunctionName: "SKAX_startStream", 
+                              Principal: "events.amazonaws.com",
+                              SourceArn: `arn:aws:events:ap-southeast-1:455680218869:rule/CW_${dataTriggers.workflowId.S}`, 
+                              StatementId: `lambda_${dataTriggers.workflowId.S}`
+                            }
+                            lambda.addPermission(params_addPermission, (err, data) => {
+                              if(err) {
+                                cb(err,null);
+                              } else {
+                                cb(null,data);
+                              }
+                            })
                           }
-                        })
+                        });
                       }
                     });
                   }
@@ -79,10 +98,10 @@ exports.handle = function(e, ctx, cb) {
       let queryDynamodb = {
         ExpressionAttributeValues: {
           ":id": {
-              S: e.streamId
+              S: e.workflowId
            }
          }, 
-        FilterExpression: "streamId = :id",
+        FilterExpression: "workflowId = :id",
         TableName: "Triggers"
       }
   
@@ -92,7 +111,7 @@ exports.handle = function(e, ctx, cb) {
           cb(err, null);
         } else {
           let params_putRule = {
-            Name: `CW_${dataTriggers.streamId.S}`, //ini untuk name Workflow ID nya
+            Name: `CW_${dataTriggers.workflowId.S}`, //ini untuk name Workflow ID nya
             RoleArn: 'arn:aws:iam::455680218869:role/SKAX_lambda_function',
             ScheduleExpression: `cron(${dataTriggers.cronDate.S})`, // ini untuk ScheduleExpressionya
             State: "DISABLED" // ini untuk ENABLED atau DISABLED nya
