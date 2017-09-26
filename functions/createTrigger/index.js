@@ -40,7 +40,13 @@ exports.handle = function(e, ctx, cb) {
             },
             "type":{
                 S: e.type
-            } 
+            },
+            "status":{
+                S: e.status
+            },
+            "date_running":{
+                S: e.date_running
+            }
         },
         ReturnConsumedCapacity: "TOTAL",
         TableName: "Triggers"
