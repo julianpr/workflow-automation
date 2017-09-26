@@ -1,0 +1,6 @@
+{
+  "description": "function to test slack app integration",
+  "memory": 128,
+  "timeout": 5,
+  "role": "arn:aws:iam::455680218869:role/SKAX_lambda_function"
+}
