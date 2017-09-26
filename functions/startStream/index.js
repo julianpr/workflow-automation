@@ -25,9 +25,19 @@ exports.handle = function(e, ctx, cb) {
 
       var streamId = uuid; //temporary id for testing
       var dynamodb = new AWS.DynamoDB();
-      let rawstring = e.resources[0]
-      var findString = rawstring.substr(rawstring.indexOf("CW_") + 3);
-      var workflowId = (findString === undefined ? '' : findString);
+      var rawstring;
+      var findString;
+      var workflowId;
+
+      if(e.resources == undefined){
+          let temp = e.Records[0].Sns.Message
+          temp = temp.slice(0,-1).slice(1)
+          workflowId = temp 
+        } else {
+            rawstring = e.resources[0]
+            findString = rawstring.substr(rawstring.indexOf("CW_") + 3);
+            workflowId = (findString === undefined ? '' : findString);
+      }
 
       var newItem = {
             Item: {
